@@ -1,4 +1,4 @@
-JaiSpritesheet :: #import "JaiSpritesheet";
+JaiSpritesheet :: #import "JaiSpritesheet"("test");
 #import "Basic";
 
 my_window: Window_Type;
@@ -146,9 +146,14 @@ draw_one_frame :: () {
     }
     
     for it, index : dst {
+        Simp.set_shader_for_images(*image_test);
+        Simp.immediate_begin();
         r, g, b := hsv_to_rgb(((index + 1.0) / cast(float) dst.count) * 360.0, 1, 1);
         Simp.immediate_quad(cast(float) it.x, cast(float)it.y, cast(float)it.x + cast(float)it.width, cast(float)it.y + cast(float)it.height, Vector4.{r, g, b, 1});
+        Simp.immediate_flush();
     }
+
+    Simp.set_shader_for_color();
 
     // Draw some text.
     {

@@ -1,3 +1,5 @@
+#module_parameters(DIR : string = "./res");
+
 #scope_file
 
 #import "Basic";
@@ -19,7 +21,7 @@ texture_load_from_file :: (map: *Texture, filename: string, dst : *[..] *Rect, s
 
   rects : [..] *Rect;
 
-  for 0..256 {
+  for 0..228 {
     c := New(Rect);
     c.x = 0;
     c.y = 0;
@@ -45,3 +47,5 @@ texture_load_from_file :: (map: *Texture, filename: string, dst : *[..] *Rect, s
 
   return Simp.texture_load_from_file(map, filename, srgb, build_mipmaps);
 }
+
+#run print("Test:%\n", DIR);

@@ -1,16 +1,9 @@
-RectSize :: struct {
-  width : int;
-  height : int;
-}
-
 Rect :: struct {
   x : int;
   y : int;
   width : int;
   height : int;
 }
-
-
 
 // Performs a lexicographic compare on (rect short side, rect long side).
 // @return -1 if the smaller side of a is shorter than the smaller side of b, 1 if the other way around.

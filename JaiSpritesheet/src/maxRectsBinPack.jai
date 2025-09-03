@@ -14,7 +14,7 @@ DEFAULT_CHOICE_HEURISTIC :: FreeRectChoiceHeuristic.RECT_BEST_SHORT_SIDE_FIT;
 // Computes the placement score for placing the given rectangle with the given method.
 // @return rect - This struct identifies where the rectangle would be placed if it were placed.
 // @return score1 - The primary placement score will be outputted here.
-// @return score2 - The secondary placement score will be outputted here. This isu sed to break ties.
+// @return score2 - The secondary placement score will be outputted here. This is used to break ties.
 _score_rect :: (self : *MaxRectsBinPack, width : int, height : int, method : FreeRectChoiceHeuristic = DEFAULT_CHOICE_HEURISTIC) -> *Rect, int, int {
   new_node : *Rect;
   score_1 : int = S32_MAX;
@@ -192,7 +192,6 @@ _insert_new_free_rectangle :: (self: *MaxRectsBinPack, new_free_rect : *Rect) {
 			self.newFreeRectangles[i] = self.newFreeRectangles[self.newFreeRectanglesLastSize];
 			self.newFreeRectangles[self.newFreeRectanglesLastSize] = self.newFreeRectangles[self.newFreeRectangles.count - 1];
 			pop(*self.newFreeRectangles);
-      print("i - % newFreeRectanglesLastSize - %\n", i, self.newFreeRectanglesLastSize);
     } else {
       i += 1;
     }
@@ -308,6 +307,7 @@ MaxRectsBinPack :: struct {
       }
 
       if best_rect_index == -1 {
+        print("Could not fit all rects.\n");
         return;
       }
 
