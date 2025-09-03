@@ -1,0 +1,7 @@
+# vscode
+*.vscode
+
+# Build
+*.build
+*.exe
+*.pdb
