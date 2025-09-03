@@ -37,7 +37,7 @@ main :: () {
     build_atlas();
 
     my_init_fonts();
-    success := JaiSpritesheet.texture_load_from_file(*image_test, "image_test.jpg", *dst);
+    success := JaiSpritesheet.texture_load_from_file(*image_test, "./res/Player/player_01.png", *dst);
     assert(success);
 
     quit := false;
@@ -215,7 +215,7 @@ my_init_fonts :: () {
     pixel_height := window_height / 24;
 
     // @Cleanup: Don't have path + name be separate.
-    my_font = Simp.get_font_at_size(".", "OpenSans-BoldItalic.ttf", pixel_height);
+    my_font = Simp.get_font_at_size("./res/", "OpenSans-BoldItalic.ttf", pixel_height);
     assert(my_font != null);
 }
 

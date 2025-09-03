@@ -1,1 +1,0 @@
-This is a module for all sorts of geometric utilities.
