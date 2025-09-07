@@ -224,6 +224,18 @@ _prune_free_list :: (self: *MaxRectsBinPack) {
 	array_reset(*self.newFreeRectangles);
 }
 
+_compute_area :: (rects : *[..] *Rect) -> u64{
+  total_area : u64 = 0;
+  for rect : rects.* {
+    total_area += xx(rect.width * rect.height);
+  }
+  return total_area;
+}
+
+_compute_area_squared :: (rects : *[..] *Rect) -> u32{
+  return xx ceil(sqrt(cast(float64) _compute_area(rects)));
+}
+
 #scope_export
 FreeRectChoiceHeuristic :: enum u8{
   RECT_BEST_SHORT_SIDE_FIT  :: 0;
@@ -287,39 +299,72 @@ MaxRectsBinPack :: struct {
 	// @param rects The list of rectangles to insert. This vector will be destroyed in the process.
 	// @param dst [out] This list will contain the packed rectangles. The indices will not correspond to that of rects.
 	// @param method The rectangle placement rule to use when packing.
-  insert :: (self : *MaxRectsBinPack, rects : [..] *Rect, dst : *[..] *Rect, method : FreeRectChoiceHeuristic = DEFAULT_CHOICE_HEURISTIC) {
+  pack_rects :: (to_place : [..] *Rect, dst : *[..] *Rect, method : FreeRectChoiceHeuristic = DEFAULT_CHOICE_HEURISTIC) -> int, int, float64{
     array_reset(dst);
+    all_fit : bool = false;
+    width : u32 = _compute_area_squared(*to_place); //TODO: should take a pointer to the thing.
+    height := width;
+    utilization : float64 = 0;
 
-    while (rects.count > 0) {
-      best_score_1 : int = S32_MAX;
-      best_score_2 : int = S32_MAX;
-      best_rect_index : int = -1;
-      best_node : *Rect;
+    while (!all_fit) {
+      // Init a new MaxRectsBinPack
+      bin_pack := init(width, height);
+      defer free(bin_pack);
 
-      for rect, index : rects {
-        new_node, score1, score2 := _score_rect(self, rect.width, rect.height, method);
-        if (score1 < best_score_1 || (score1 == best_score_1 && score2 < best_score_2)) {
-          best_score_1 = score1;
-          best_score_2 = score2;
-          best_node = new_node;
-          best_rect_index = index;
+      // Copy to_place
+      rects: [..] *Rect;
+      array_copy(*rects, to_place);
+
+      // Try to fit all rects.
+      while (rects.count > 0) {
+        best_score_1 : int = S32_MAX;
+        best_score_2 : int = S32_MAX;
+        best_rect_index : int = -1;
+        best_node : *Rect;
+
+        for rect, index : rects {
+          new_node, score1, score2 := _score_rect(bin_pack, rect.width, rect.height, method);
+          if (score1 < best_score_1 || (score1 == best_score_1 && score2 < best_score_2)) {
+            best_score_1 = score1;
+            best_score_2 = score2;
+            best_node = new_node;
+            best_node.file_path = rect.file_path;
+            best_rect_index = index;
+          }
         }
-      }
 
-      if best_rect_index == -1 {
-        print("Could not fit all rects.\n");
-        return;
-      }
+        if best_rect_index == -1 {
+          // Determine how much to grow by
+          area_needed := _compute_area(*rects);
+          // area_needed /= 100;
+          //TODO: Options, for now try to grow as square.
+          print("Could not fit all rects:%\n", area_needed);
+          width += xx max((area_needed / 2 / width), 1);
+          height += xx max((area_needed / 2 / height), 1);
+          break; // Break out of this loop into parent loop;
+        }
 
-      _place_rect(self, best_node);
-      array_add(dst, best_node);
-      rects[best_rect_index] = rects[rects.count - 1];
-      pop(*rects);
+        _place_rect(bin_pack, best_node);
+        array_add(dst, best_node);
+        // Remove this rect.
+        rects[best_rect_index] = rects[rects.count - 1];
+        pop(*rects);
+      }
+      if (rects.count == 0) {
+        all_fit = true;
+        utilization = occupancy(bin_pack);
+      }
     }
+
+    return width, height, utilization;
   }
 
   // Computes the ratio of used surface area to the total bin area.
-  occupancy :: (self : *MaxRectsBinPack) -> float {
-
+  occupancy :: (self : *MaxRectsBinPack) -> float64 {
+    used_area : u64 = 0;
+    for rect : self.usedRectangles {
+      used_area += xx (rect.width * rect.height);
+    }
+    return (cast(float64)used_area) / (self.binWidth * self.binHeight);
   }
 }

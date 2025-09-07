@@ -35,10 +35,7 @@ main :: () {
     Simp.set_render_target(my_window, .LEFT_HANDED);
 
     build_atlas();
-
     my_init_fonts();
-    success := JaiSpritesheet.texture_load_from_file(*image_test, "./res/Player/player_01.png", *dst);
-    assert(success);
 
     quit := false;
     want_screenshot := false;
@@ -144,14 +141,6 @@ draw_one_frame :: () {
 
         Simp.immediate_quad(p0, p1, p2, p3, c0, c1, c2, c3);
     }
-    
-    for it, index : dst {
-        Simp.set_shader_for_images(*image_test);
-        Simp.immediate_begin();
-        r, g, b := hsv_to_rgb(((index + 1.0) / cast(float) dst.count) * 360.0, 1, 1);
-        Simp.immediate_quad(cast(float) it.x, cast(float)it.y, cast(float)it.x + cast(float)it.width, cast(float)it.y + cast(float)it.height, Vector4.{r, g, b, 1});
-        Simp.immediate_flush();
-    }
 
     Simp.set_shader_for_color();
 
@@ -193,10 +182,7 @@ draw_one_frame :: () {
         Simp.set_shader_for_images(*image_test);
         Simp.immediate_begin();
 
-        w := window_height/8.0;
-        y0 := cast(float) window_height;
-
-        Simp.immediate_quad(.{0, y0-w}, .{w, y0-w}, .{w, y0}, .{0, y0});
+        Simp.immediate_quad(Vector2.{0, 0}, Vector2.{xx image_test.width, 0}, Vector2.{xx image_test.width, xx image_test.height}, Vector2.{0, xx image_test.height});
         Simp.immediate_flush();
     }
 
@@ -204,7 +190,10 @@ draw_one_frame :: () {
 }
 
 build_atlas :: () {
-    // JaiSpritesheet.test(*dst);
+    output_path := "example/atlas.png";
+    JaiSpritesheet.add_dir("example/res");
+    JaiSpritesheet.build(output_path = output_path);
+    success := JaiSpritesheet.texture_load_from_file(*image_test, tprint("./%", output_path), *dst);
 }
 
 my_init_fonts :: () {

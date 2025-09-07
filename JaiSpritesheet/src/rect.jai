@@ -3,6 +3,7 @@ Rect :: struct {
   y : int;
   width : int;
   height : int;
+  file_path : string;
 }
 
 // Performs a lexicographic compare on (rect short side, rect long side).
